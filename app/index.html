@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MadriaWall</title>
+    <link rel="icon" type="image/png" href="img/ping-logo.png">
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; line-height: 1.6; background-color: #f4f4f9; }
+        section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .controls { display: flex; flex-direction: column; gap: 10px; }
+        input, select, button { padding: 10px; border-radius: 4px; border: 1px solid #ddd; font-size: 16px; }
+        button { border: none; cursor: pointer; font-weight: bold; }
+        .button-blue { background-color: #3498db; color: white; }
+        .button-blue:hover { background-color: #2980b9; }
+        .button-light-green { background-color: #27ae5f90; color: white; }
+        .button-light-green:hover { background-color: #17934baf; }
+        .button-green { background-color: #27ae60; color: white; }
+        .button-green:hover { background-color: #17934b; }
+        .button-grey { background-color: #95a5a6; flex: 1; color: white; }
+        .button-grey:hover { background-color: #858a8a; }
+        .button-yellow { background-color: #e9e225; flex: 1; color: white; }
+        .button-yellow:hover { background-color: #ddd614; }
+        .button-red { background-color: #e74c3c; flex: 1; color: white; }
+        .button-red:hover { background-color: #d63624; }
+        #resultado-ia { background: #e8f4fd; padding: 15px; border-left: 5px solid #3498db; margin-top: 10px; }
+        #resultado-ia ul {list-style-type: disc; margin-left: 25px; padding-left: 10px; margin-top: 5px; margin-bottom: 5px; }
+        #resultado-ia strong {font-weight: bold; color: #2980b9; }
+        #resultado-ia p {margin-bottom: 10px; }
+        #resultado-ia-particular { background: #eafaf1; padding: 15px; border-left: 5px solid #27ae60; margin-top: 10px; }
+        #resultado-ia-particular ul {list-style-type: disc; margin-left: 25px; padding-left: 10px; margin-top: 5px; margin-bottom: 5px; }
+        #resultado-ia-particular strong {font-weight: bold; color: #1e8449; }
+        #resultado-ia-particular p {margin-bottom: 10px; }
+        .delete-zone { background: #fff5f5; border: 1px solid #feb2b2; }
+        .subtitle {color: #666; font-size: 0.9em; margin-top: -10px; margin-bottom: 15px; font-style: italic;}
+    </style>
+</head>
+<body>
+
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <h1>Panel de MadriaWall</h1>
+
+    <section>
+        <h2>🌦️ Asistente de IA sobre clima en Madrid</h2>
+        <p class="subtitle"><strong>Tu asistente inteligente sobre el estado de Madrid:</strong> ofrece recomendaciones prácticas basadas en información climática.</p>
+        <div class="controls">
+            <input type="text" id="pregunta-ia" placeholder="Formulación de pregunta (ej: ¿Qué tal hoy para ir en bici por Ciudad Universitaria?)">
+            <button class="button-blue" onclick="consultarIA()">Consultar a IA</button>
+        </div>
+        <div id="resultado-ia"> <em> La respuesta de la IA aparecerá aquí... </em> </div>
+    </section>
+
+    <section>
+        <h2>🤖 Asistente de IA particular</h2>
+        <p class="subtitle"><strong>Tu asistente inteligente particular.</strong><div class=""></div></p>
+        <div class="controls">
+            <input type="text" id="pregunta-ia-particular" placeholder="Formulación de pregunta...">
+            <button class="button-light-green" onclick="consultarIAparticular()">Consultar a IA</button>
+        </div>
+        <div id="resultado-ia-particular"> <em> La respuesta de la IA aparecerá aquí... </em> </div>
+    </section>
+
+    <section>
+        <h2>📤 Publicar en el Muro</h2>
+        <p class="subtitle"><strong>Tu espacio personal:</strong> actualiza tu contenido digital.</p>
+        <div class="controls">
+            <label for="muro-desc">Descripción del contenido <small>(opcional)</small>:</label>
+            <input type="text" id="muro-desc" placeholder="Ej: Mi foto en Madrid">
+            <label for="muro-content-type">Tipo de contenido <small>(opcional)</small>:</label>
+            <!--input type="text" id="muro-content-type" placeholder="Tipo de contenido (Ej: text, image, audio, pcap, pdf, ...)"-->
+            <input type="text" id="muro-content-type" list="sugerencias-tipo" placeholder="Ej: text, image, audio, pcap, pdf, ...">
+            <datalist id="sugerencias-tipo">
+                <option value="text">
+                <option value="image">
+                <option value="audio">
+                <option value="pcap">
+                <option value="pdf">
+            </datalist>
+            <label for="muro-archivo">Archivo:</label>
+            <input type="file" id="muro-archivo">
+            <button class="button-green" onclick="subirAlMuro()">Publicar contenido</button>
+        </div>
+    </section>
+
+    <section>
+        <h2>📂 Gestión de contenidos del Muro</h2>
+        <p class="subtitle"><strong>Tu espacio personal:</strong> gestiona tu contenido digital.</p>
+        <div class="controls">
+            <!--p>Selecciona un elemento del muro:</p-->
+            <select id="selector-muro">
+                <option value="" disabled selected>-- Selecciona un elemento para gestionar --</option>
+                <!--option value="">Cargando contenido...</option-->
+            </select>
+            <!--div style="display: flex; gap: 10px;"-->
+            <div style="display: flex; gap: 10px; margin-top: 10px;"></div>
+                <button class="button-grey" onclick="cargarListaMuro()">Refrescar lista</button>
+                <button class="button-yellow" onclick="abrirContenido()">Abrir/Ver</button>
+                <button class="button-red" onclick="borrarDelMuro()">Borrar selección</button>
+            </div>
+
+            <div id="visualizador" style="margin-top: 15px; padding: 10px; border: 1px dashed #ccc; min-height: 50px;">
+                <em>El contenido se mostrará aquí...</em>
+            </div>
+        </div>
+    </section>
+
+    <button class="button-blue" onclick="localStorage.removeItem('token'); window.location.href='login.html';">Cerrar Sesión</button>
+    <script src="frontend.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>

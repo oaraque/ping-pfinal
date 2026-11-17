@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - MadriaWall</title>
+    <link rel="icon" type="image/png" href="img/ping-logo.png">
+    <style>
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            padding-top: 50px; 
+            background-color: #f4f4f9;
+            line-height: 1.6;
+        }
+        .login-card { 
+            background: white;
+            padding: 30px; 
+            border-radius: 8px; 
+            width: 350px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 { color: #2c3e50; text-align: center; margin-bottom: 25px; }
+        input { 
+            width: 100%; 
+            margin-bottom: 15px; 
+            padding: 12px; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px; /* Asegura legibilidad */
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            cursor: pointer; 
+            margin-top: 5px; 
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        #loginBtn { background-color: #3498db; color: white; }
+        #loginBtn:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>MadriaWall</h2>
+    <input type="text" id="username" placeholder="Usuario" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+    
+    <button id="loginBtn">Entrar</button>
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>

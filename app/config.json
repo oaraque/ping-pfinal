@@ -1,0 +1,11 @@
+{
+  "ai_agent": {
+    "system_instruction": ""
+  },
+  "database": {
+    "user": "",
+    "password": "",
+    "ip": "",
+    "port": ""
+  }
+}
