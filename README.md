@@ -16,15 +16,15 @@ hace y de cómo comprobar que ha funcionado.
 ## Índice
 
 - [1. Antes de empezar (requisitos)](#1-antes-de-empezar-requisitos)
-- [2. Paso 1 — Obtener el código](#2-paso-1--obtener-el-código)
-- [3. Paso 2 — Crear y activar el entorno virtual de Python](#3-paso-2--crear-y-activar-el-entorno-virtual-de-python)
-- [4. Paso 3 — Instalar las dependencias](#4-paso-3--instalar-las-dependencias)
-- [5. Paso 4 — Conseguir las API Keys y el secreto](#5-paso-4--conseguir-las-api-keys-y-el-secreto)
-- [6. Paso 5 — Configurar el fichero `.env`](#6-paso-5--configurar-el-fichero-env)
-- [7. Paso 6 — Configurar el fichero `config.json`](#7-paso-6--configurar-el-fichero-configjson)
-- [8. Paso 7 — Servir el contenido estático](#8-paso-7--servir-el-contenido-estático)
-- [9. Paso 8 — Arrancar la aplicación (backend)](#9-paso-8--arrancar-la-aplicación-backend)
-- [10. Paso 9 — Comprobar que todo funciona](#10-paso-9--comprobar-que-todo-funciona)
+- [2. Obtener el código](#2-obtener-el-código)
+- [3. Crear y activar el entorno virtual de Python](#3-crear-y-activar-el-entorno-virtual-de-python)
+- [4. Instalar las dependencias](#4-instalar-las-dependencias)
+- [5. Conseguir las API Keys y el secreto](#5-conseguir-las-api-keys-y-el-secreto)
+- [6. Configurar el fichero `.env`](#6-configurar-el-fichero-env)
+- [7. Configurar el fichero `config.json`](#7-configurar-el-fichero-configjson)
+- [8. Servir el contenido estático](#8-servir-el-contenido-estático)
+- [9. Arrancar la aplicación (backend)](#9-arrancar-la-aplicación-backend)
+- [10. Comprobar que todo funciona](#10-comprobar-que-todo-funciona)
 - [11. Fuentes de datos abiertas](#11-fuentes-de-datos-abiertas)
 - [12. Conectarse al servidor con SSH](#12-conectarse-al-servidor-con-ssh)
 - [13. Problemas frecuentes (troubleshooting)](#13-problemas-frecuentes-troubleshooting)
@@ -61,7 +61,7 @@ ssh -i <ruta_a_tu_clave> ping@<IP_SERVIDOR>
 
 ---
 
-## 2. Paso 1 — Obtener el código
+## 2. Obtener el código
 
 > **Dónde estás:** este paso y todos los siguientes se hacen **dentro del
 > servidor** (es decir, después de haberte conectado por SSH). No los ejecutes
@@ -91,7 +91,7 @@ cd ping-pfinal/app
 
 ---
 
-## 3. Paso 2 — Crear y activar el entorno virtual de Python
+## 3. Crear y activar el entorno virtual de Python
 
 Un **entorno virtual** es una "caja aislada" donde se instalan las librerías de
 Python de este proyecto, sin afectar al resto del sistema.
@@ -119,7 +119,7 @@ source venv/bin/activate
 
 ---
 
-## 4. Paso 3 — Instalar las dependencias
+## 4. Instalar las dependencias
 
 Las "dependencias" son las librerías que la aplicación necesita para funcionar.
 Están listadas en el fichero `requirements.txt` y se instalan con:
@@ -133,7 +133,7 @@ pip install -r requirements.txt
 
 ---
 
-## 5. Paso 4 — Conseguir las API Keys y el secreto
+## 5. Conseguir las API Keys y el secreto
 
 La aplicación necesita **tres valores secretos**. Consíguelos antes de seguir:
 
@@ -160,7 +160,7 @@ Guarda los tres valores a mano; los vas a necesitar justo ahora.
 
 ---
 
-## 6. Paso 5 — Configurar el fichero `.env`
+## 6. Configurar el fichero `.env`
 
 El fichero `.env` guarda los valores secretos como **variables de entorno**.
 Edítalo con el editor de texto `nano`:
@@ -183,12 +183,10 @@ Para **guardar y salir de nano**:
 1. Pulsa `Ctrl` + `O` y luego `Enter` (guarda los cambios).
 2. Pulsa `Ctrl` + `X` (cierra el editor).
 
-> Importante: el fichero `.env` contiene secretos. **No lo compartas** ni lo
-> subas al repositorio.
 
 ---
 
-## 7. Paso 6 — Configurar el fichero `config.json`
+## 7. Configurar el fichero `config.json`
 
 Este fichero define el **comportamiento del asistente de IA** y los datos de
 conexión a la **base de datos MongoDB**.
@@ -217,8 +215,10 @@ Debe tener esta estructura:
 
 Explicación de los campos:
 
-- `ai_agent.system_instruction`: el "rol" o las instrucciones que seguirá tu
-  asistente de IA particular. Puedes personalizarlo.
+- `ai_agent.system_instruction`: define el "rol" y las instrucciones del
+  asistente de IA particular. Puedes elegir el tema sobre el que quieres que te
+  ayude; después, al hacerle preguntas relacionadas con ese tema, el asistente
+  orientará sus respuestas según las instrucciones que hayas configurado.
 - `database`: datos para conectar con MongoDB. En el servidor de la asignatura
   los valores habituales son usuario `admin`, contraseña `admin`, IP
   `localhost` y puerto `27017`. No los cambies salvo que te indiquen lo
@@ -228,17 +228,15 @@ Guarda y sal igual que antes (`Ctrl`+`O`, `Enter`, `Ctrl`+`X`).
 
 ---
 
-## 8. Paso 7 — Servir el contenido estático
+## 8. Servir el contenido estático
 
 El "contenido estático" son las páginas web (`.html`) y los scripts (`.js`) que
-ve el usuario en el navegador. Hay que **moverlos** a la carpeta
+ve el usuario en el navegador, así como el directorio `img`. Hay que **moverlos** a la carpeta
 `/home/ping/static`, que es desde donde Apache los publica.
 
-```bash
-mv /home/ping/ping-pfinal/app/*.js /home/ping/ping-pfinal/app/*.html /home/ping/static/
-```
+Si has seguido los pasos, el directorio original será `/home/ping/ping-pfinal/app`, y el directorio destino `/home/ping/static`.
 
-> `mv` mueve ficheros. Aquí movemos todos los ficheros `.js` y `.html` de la
+> `mv` mueve ficheros. Aquí movemos todos los ficheros `.js`, `.html` y de imagen de la
 > carpeta `app` a la carpeta `static`.
 >
 > Si la ruta de tu carpeta `app` no es exactamente `/home/ping/ping-pfinal/app`, ajústala a
@@ -251,12 +249,11 @@ ordenador y entra en:
 http://<IP_SERVIDOR>/app
 ```
 
-Debería cargarse la página de inicio de la aplicación. Si la ves, vas por buen
-camino.
+Debería cargarse la página de inicio de la aplicación.
 
 ---
 
-## 9. Paso 8 — Arrancar la aplicación (backend)
+## 9. Arrancar la aplicación (backend)
 
 El "backend" es la parte de la aplicación hecha con Python/FastAPI, que atiende
 las peticiones. Arráncalo con:
@@ -280,7 +277,7 @@ uvicorn main:app --port 8080
 
 ---
 
-## 10. Paso 9 — Comprobar que todo funciona
+## 10. Comprobar que todo funciona
 
 Con la aplicación arrancada, comprueba estas cosas:
 
@@ -292,18 +289,19 @@ Con la aplicación arrancada, comprueba estas cosas:
 
    Deberías poder iniciar sesión y usar el muro.
 
-2. **Documentación de la API** (una página interactiva generada por FastAPI
-   donde puedes probar los endpoints):
+2. **Inicio de sesión**: la aplicación crea al arrancar (si no existía ya) un
+   usuario `ping` con contraseña `ping` como credenciales de autenticación para
+   poder iniciar sesión. Usa dichas credenciales para entrar y comprobar que la
+   autenticación funciona.
 
-   ```
-   http://<IP_SERVIDOR>:8080/docs
-   ```
+Si los dos puntos responden, ¡la aplicación está correctamente desplegada!
 
-3. **Inicio de sesión de prueba**: la aplicación crea al arrancar un usuario
-   básico con usuario `ping` y contraseña `ping`. Úsalo para entrar y comprobar
-   que la autenticación funciona.
-
-Si los tres puntos responden, ¡la aplicación está correctamente desplegada!
+> **Recomendación de seguridad:** cuando dejes de trabajar con la aplicación,
+> **párala** pulsando `Ctrl` + `C` en la terminal donde la arrancaste (ver
+> apartado 9). Como las credenciales de inicio de sesión son conocidas
+> (`ping` / `ping`), dejar la aplicación encendida y accesible podría permitir
+> que alguien que conozca la dirección IP del servidor entrara en ella. Al
+> pararla cuando no la uses, evitas ese riesgo.
 
 ---
 
@@ -484,7 +482,7 @@ aplicación que no cerraste). Puedes:
 
 ### No se ve la página en `http://<IP_SERVIDOR>/app`
 - Verifica que **moviste** los ficheros `.html` y `.js` a `/home/ping/static`
-  (Paso 7).
+  (apartado 8).
 - Confirma que estás usando la **IP correcta** del servidor.
 
 ### No recuerdo cómo parar la aplicación
