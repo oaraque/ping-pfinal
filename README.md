@@ -219,6 +219,8 @@ Explicación de los campos:
   asistente de IA particular. Puedes elegir el tema sobre el que quieres que te
   ayude; después, al hacerle preguntas relacionadas con ese tema, el asistente
   orientará sus respuestas según las instrucciones que hayas configurado.
+  Por ejemplo: «Eres un agente que responde preguntas a alumnos de primer curso de Ingeniería de Telecomunicación
+  en la Universidad Politécnica de Madrid.»
 - `database`: datos para conectar con MongoDB. En el servidor de la asignatura
   los valores habituales son usuario `admin`, contraseña `admin`, IP
   `localhost` y puerto `27017`. No los cambies salvo que te indiquen lo
