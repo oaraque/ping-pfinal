@@ -8,6 +8,10 @@ let entradas = []
 // Lo guardamos para poder liberarlo (revokeObjectURL) al cargar contenido nuevo.
 let currentObjectUrl = null;
 
+// Instancia de la gráfica Chart.js mostrada actualmente (si la hay).
+// La guardamos para poder destruirla antes de dibujar otra y evitar fugas.
+let currentChart = null;
+
 // Función "envoltorio" para peticiones protegidas
 async function secureFetch(url, options = {}) {
     const token = localStorage.getItem('token');
@@ -243,6 +247,12 @@ async function abrirContenido() {
         currentObjectUrl = null;
     }
 
+    // Destruimos la gráfica anterior (si la hay) para evitar fugas y solapamientos
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
+
     visualizador.innerHTML = "Cargando...";
 
     try {
@@ -258,6 +268,20 @@ async function abrirContenido() {
 
         console.log("Meta detectada:", entry);
         console.log("Tipo de contenido detectado:", contentType);
+
+        // CSV: lo detectamos por la extensión del fichero (más fiable que el
+        // content-type, que al subir puede no ser "text/csv") o por el MIME.
+        const esCSV = (nombreFichero && nombreFichero.toLowerCase().endsWith(".csv"))
+            || (contentType && contentType.includes("csv"));
+
+        if (esCSV) {
+            const texto = await response.text();
+            // Guardamos un blob para permitir descargar el CSV original
+            const blob = new Blob([texto], { type: "text/csv" });
+            currentObjectUrl = URL.createObjectURL(blob);
+            mostrarCSV(visualizador, texto, nombreFichero, entry.description, currentObjectUrl);
+            return;
+        }
 
         // Para contenido de texto no necesitamos blob: lo leemos directamente.
         // Para el resto (imagen, audio, pdf, binarios) creamos un blob URL a partir
@@ -341,4 +365,186 @@ async function abrirContenido() {
         console.error(error);
         visualizador.innerHTML = "Error al intentar abrir el archivo.";
     }
+}
+
+/**
+ * 7. VISUALIZACIÓN DE CSV CON GRÁFICA AUTOMÁTICA
+ *
+ * Muestra el contenido del CSV y, cuando es posible, una gráfica generada a
+ * partir de sus datos. El fichero original se puede descargar sin modificar.
+ */
+function escaparHTML(str) {
+    return String(str).replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+}
+
+/**
+ * Intenta convertir un valor de texto a número, admitiendo el separador
+ * decimal europeo (coma) y los separadores de millar. Devuelve null si no
+ * es un número válido.
+ */
+function aNumero(valor) {
+    if (valor === null || valor === undefined) return null;
+    let s = String(valor).trim();
+    if (s === "") return null;
+    const tienePunto = s.includes(".");
+    const tieneComa = s.includes(",");
+    if (tienePunto && tieneComa) {
+        // Ambos separadores: el que aparece en ÚLTIMO lugar es el decimal.
+        if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+            // Formato europeo: punto=millar, coma=decimal (1.234,56)
+            s = s.replace(/\./g, "").replace(",", ".");
+        } else {
+            // Formato anglosajón: coma=millar, punto=decimal (1,234.56)
+            s = s.replace(/,/g, "");
+        }
+    } else if (tieneComa) {
+        // Solo coma: la tratamos como separador decimal (1234,56)
+        s = s.replace(",", ".");
+    }
+    // Solo punto (o sin separadores): se deja tal cual.
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+}
+
+/** Comprueba si una columna (array de celdas) es mayoritariamente numérica. */
+function columnaEsNumerica(valores) {
+    let numericos = 0, total = 0;
+    for (const v of valores) {
+        if (v === null || v === undefined || String(v).trim() === "") continue;
+        total++;
+        if (aNumero(v) !== null) numericos++;
+    }
+    return total > 0 && (numericos / total) >= 0.8;
+}
+
+/** Comprueba si una columna parece contener fechas interpretables. */
+function columnaEsFecha(valores) {
+    let validas = 0, total = 0;
+    for (const v of valores) {
+        if (v === null || v === undefined || String(v).trim() === "") continue;
+        total++;
+        if (!isNaN(Date.parse(String(v).trim()))) validas++;
+    }
+    return total > 0 && (validas / total) >= 0.8;
+}
+
+const COLORES_GRAFICA = [
+    "#3498db", "#e74c3c", "#27ae60", "#f39c12", "#9b59b6", "#16a085"
+];
+const MAX_SERIES = 3;      // nº máximo de columnas numéricas a representar
+const MAX_PUNTOS = 1000;   // nº máximo de filas a dibujar (evita colgar el navegador)
+
+function mostrarCSV(visualizador, texto, nombreFichero, descripcion, objectUrl) {
+    // 1. Parseamos el CSV (cabeceras, comillas y separador auto-detectado)
+    const parsed = Papa.parse(texto.trim(), {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+    });
+
+    const filas = parsed.data || [];
+    const columnas = (parsed.meta && parsed.meta.fields) ? parsed.meta.fields : [];
+
+    const enlaceDescarga = `
+        <div style="margin-bottom: 10px;">
+            <a href="${objectUrl}" download="${escaparHTML(nombreFichero)}" style="padding:10px; background:grey; color:white; text-decoration:none; border-radius:5px;">
+                📥 Descargar original
+            </a>
+        </div>`;
+
+    const cabecera = `<p>Visualizando CSV: ${escaparHTML(nombreFichero)} (${escaparHTML(descripcion || "fichero CSV")})</p>${enlaceDescarga}`;
+
+    // Si no hay columnas o filas aprovechables, mostramos solo el texto.
+    if (columnas.length === 0 || filas.length === 0) {
+        visualizador.innerHTML = `${cabecera}
+            <p><em>No se ha podido interpretar el CSV como tabla; se muestra su contenido.</em></p>
+            <pre style="background:#f4f4f4; padding:10px; overflow-x:auto;">${escaparHTML(texto)}</pre>`;
+        return;
+    }
+
+    // 2. Decidimos qué columnas representar.
+    const valoresPorColumna = {};
+    for (const c of columnas) valoresPorColumna[c] = filas.map(f => f[c]);
+
+    const columnasNumericas = columnas.filter(c => columnaEsNumerica(valoresPorColumna[c]));
+
+    // Eje X: primera columna de fecha; si no hay, primera columna no numérica;
+    // si tampoco, usaremos el número de fila.
+    let colX = columnas.find(c => columnaEsFecha(valoresPorColumna[c]) && !columnasNumericas.includes(c));
+    let tipo = "line";
+    if (!colX) {
+        const colCategoria = columnas.find(c => !columnasNumericas.includes(c));
+        if (colCategoria) { colX = colCategoria; tipo = "bar"; }
+    }
+
+    // Series Y: columnas numéricas (excluyendo la de eje X si fuese numérica).
+    const seriesY = columnasNumericas.filter(c => c !== colX).slice(0, MAX_SERIES);
+
+    // Si no hay ninguna serie numérica, no podemos graficar.
+    if (seriesY.length === 0) {
+        visualizador.innerHTML = `${cabecera}
+            <p><em>Este CSV no contiene columnas numéricas que se puedan representar en una gráfica. Se muestra su contenido.</em></p>
+            ${tablaHTML(columnas, filas)}`;
+        return;
+    }
+
+    // 3. Preparamos etiquetas y datos (limitando el nº de puntos).
+    const filasUsadas = filas.slice(0, MAX_PUNTOS);
+    const etiquetas = filasUsadas.map((f, i) => colX ? f[colX] : (i + 1));
+    const datasets = seriesY.map((c, idx) => ({
+        label: c,
+        data: filasUsadas.map(f => aNumero(f[c])),
+        borderColor: COLORES_GRAFICA[idx % COLORES_GRAFICA.length],
+        backgroundColor: COLORES_GRAFICA[idx % COLORES_GRAFICA.length],
+        fill: false,
+        spanGaps: true,
+    }));
+
+    const aviso = filas.length > MAX_PUNTOS
+        ? `<p class="subtitle">Mostrando las primeras ${MAX_PUNTOS} filas de ${filas.length}.</p>`
+        : "";
+
+    visualizador.innerHTML = `${cabecera}
+        ${aviso}
+        <div style="position: relative; height: 350px; margin-bottom: 15px;">
+            <canvas id="grafica-csv"></canvas>
+        </div>
+        <details>
+            <summary style="cursor:pointer;">Ver datos del CSV</summary>
+            ${tablaHTML(columnas, filas)}
+        </details>`;
+
+    // 4. Dibujamos la gráfica con Chart.js.
+    const ctx = document.getElementById("grafica-csv").getContext("2d");
+    currentChart = new Chart(ctx, {
+        type: tipo,
+        data: { labels: etiquetas, datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: colX ? `Datos por "${colX}"` : "Datos del CSV",
+                },
+            },
+            scales: {
+                x: { title: { display: !!colX, text: colX || "" } },
+                y: { title: { display: true, text: seriesY.join(", ") } },
+            },
+        },
+    });
+}
+
+/** Genera una tabla HTML (con escape) a partir de columnas y filas del CSV. */
+function tablaHTML(columnas, filas, maxFilas = 100) {
+    const cab = columnas.map(c => `<th style="border:1px solid #ddd; padding:4px;">${escaparHTML(c)}</th>`).join("");
+    const cuerpo = filas.slice(0, maxFilas).map(f => {
+        const celdas = columnas.map(c => `<td style="border:1px solid #ddd; padding:4px;">${escaparHTML(f[c] ?? "")}</td>`).join("");
+        return `<tr>${celdas}</tr>`;
+    }).join("");
+    const nota = filas.length > maxFilas ? `<p class="subtitle">Mostrando las primeras ${maxFilas} filas de ${filas.length}.</p>` : "";
+    return `<div style="overflow-x:auto;"><table style="border-collapse:collapse; font-size:0.85em;"><thead><tr>${cab}</tr></thead><tbody>${cuerpo}</tbody></table></div>${nota}`;
 }

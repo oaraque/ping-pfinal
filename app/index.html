@@ -47,7 +47,7 @@
 
     <section>
         <h2>🌦️ Asistente de IA sobre clima en Madrid</h2>
-        <p class="subtitle"><strong>Tu asistente inteligente sobre el estado de Madrid:</strong> ofrece recomendaciones prácticas basadas en información climática.</p>
+        <p class="subtitle"><strong>Tu asistente inteligente sobre el estado climático de Madrid:</strong> ofrece recomendaciones prácticas basadas en información climática.</p>
         <div class="controls">
             <input type="text" id="pregunta-ia" placeholder="Formulación de pregunta (ej: ¿Qué tal hoy para ir en bici por Ciudad Universitaria?)">
             <button class="button-blue" onclick="consultarIA()">Consultar a IA</button>
@@ -80,6 +80,7 @@
                 <option value="audio">
                 <option value="pcap">
                 <option value="pdf">
+                <option value="csv">
             </datalist>
             <label for="muro-archivo">Archivo:</label>
             <input type="file" id="muro-archivo">
@@ -110,7 +111,9 @@
     </section>
 
     <button class="button-blue" onclick="localStorage.removeItem('token'); window.location.href='login.html';">Cerrar Sesión</button>
-    <script src="frontend.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="frontend.js"></script>
 </body>
 </html>

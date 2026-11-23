@@ -194,6 +194,8 @@ os.makedirs(PERSONAL_SUBDIR, exist_ok=True)
 # Registramos tipos MIME que 'mimetypes' no reconoce por defecto (capturas de red)
 mimetypes.add_type("application/vnd.tcpdump.pcap", ".pcap")
 mimetypes.add_type("application/vnd.tcpdump.pcap", ".pcapng")
+# Aseguramos el tipo MIME de CSV (para que la vista lo reconozca como texto/CSV)
+mimetypes.add_type("text/csv", ".csv")
 
 # ID de Madrid según AEMET (ejemplo para Madrid capital)
 ID_MUNICIPIO = "28079"
