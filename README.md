@@ -4,10 +4,6 @@ Esta guía te explica, paso a paso, cómo poner en marcha la aplicación
 **MadriaWall** (un asistente urbano inteligente de Madrid y un muro de
 contenido digital) en el **servidor de la asignatura**.
 
-Está pensada para que puedas seguirla aunque tengas **poca experiencia con la
-consola (terminal)**. Cada comando viene acompañado de una explicación de qué
-hace y de cómo comprobar que ha funcionado.
-
 > Consejo: ejecuta los comandos **de uno en uno**. Después de cada uno, lee la
 > salida de la terminal antes de pasar al siguiente.
 
@@ -45,7 +41,10 @@ Antes de nada, asegúrate de que:
   **Apache** (de esto se encargan los profesores; tú **no** necesitas permisos
   de administrador/root).
 - Sabes cuál es la **dirección IP del servidor**. En esta guía la escribiremos
-  como `<IP_SERVIDOR>`; sustitúyela por la que te hayan indicado.
+  como `<IP_SERVIDOR>`; sustitúyela por la que te hayan indicado. El servidor que
+  se usa en el proyecto final es el mismo que el que se ha usado en la Actividad 4 y
+  Laboratorio 4 del bloque de Telemática y Servicios. Recuerda que se arranca usando
+  el script `servidor_nube.py`, que está disponible en Moodle.
 
 ### Obtener tu clave privada
 
@@ -518,6 +517,82 @@ aplicación que no cerraste). Puedes:
 
 ### No recuerdo cómo parar la aplicación
 En la terminal donde se está ejecutando `uvicorn`, pulsa `Ctrl` + `C`.
+
+### Problemas con los asistentes de IA
+
+Los asistentes de IA dependen de **servicios externos** (AEMET para los datos
+meteorológicos y Gemini para generar las respuestas). Los siguientes errores
+pueden aparecer aunque hayas desplegado bien la aplicación: casi siempre son
+**temporales** y no se deben a un fallo tuyo. Para entender qué pasa, mira tanto
+la respuesta en la página web como los mensajes de la terminal donde se ejecuta
+`uvicorn`.
+
+#### Falla la consulta a la AEMET (pero hay datos guardados)
+En la terminal aparece un error como
+`Error procesando consulta a la AEMET: 401 Client Error: Unauthorized ...`.
+Es habitual que la AEMET falle de forma puntual. En ese caso, la aplicación
+reutiliza los **últimos datos meteorológicos** que obtuvo en una consulta
+anterior (mensaje `Devolviendo últimos datos meteorológicos disponibles en
+caché`), y el asistente responde con normalidad.
+
+![Error de la AEMET con datos en caché (terminal)](img/troubleshooting/aemet-error-terminal.png)
+
+#### Falla la consulta a la AEMET y no hay datos guardados
+Si la AEMET falla y la aplicación **no tiene datos previos** (en la terminal
+aparece `No hay datos disponibles en caché...`), el asistente responde solo con
+la información de calidad del aire e indica que **no dispone de datos
+meteorológicos**.
+
+![Error de la AEMET sin datos en caché (terminal)](img/troubleshooting/aemet-sin-cache-terminal.png)
+
+![Respuesta del asistente sin datos meteorológicos (web)](img/troubleshooting/aemet-sin-cache-web.png)
+
+Qué hacer:
+
+- Espera unos minutos y vuelve a consultar: cuando la AEMET responda, el
+  asistente volverá a usar sus datos.
+- Ten en cuenta que los datos guardados se pierden al **reiniciar** `uvicorn`;
+  tras reiniciar, la siguiente consulta depende de que la AEMET responda.
+- Si el error `401 Unauthorized` aparece **siempre**, revisa que el valor de
+  `API_KEY_AEMET` en el fichero `.env` es correcto (apartado 6).
+
+#### Se ha superado el límite de consultas a Gemini
+Si haces muchas consultas seguidas a los asistentes, Gemini puede rechazarlas
+por exceder el límite gratuito. En la web aparece el mensaje
+**«Error: Hemos superado el límite temporal de consultas a la IA. Por favor,
+inténtalo de nuevo más tarde.»**, y en la terminal un error `429
+RESOURCE_EXHAUSTED` que indica **cuánto tiempo esperar** antes de reintentar
+(por ejemplo, `Please retry in 10.18s`).
+
+![Límite de consultas a Gemini (terminal)](img/troubleshooting/gemini-limite-terminal.png)
+
+![Límite de consultas a Gemini (web)](img/troubleshooting/gemini-limite-web.png)
+
+Qué hacer: espera el tiempo indicado en la terminal y vuelve a consultar.
+Evita lanzar muchas preguntas seguidas.
+
+#### Gemini está saturado temporalmente
+A veces el modelo de IA de Gemini tiene un **pico de uso** y no puede atender la
+petición. En la web aparece **«Error: Ocurrió un error inesperado al procesar tu
+solicitud.»**, y en la terminal un error `503 UNAVAILABLE` con el texto
+`This model is currently experiencing high demand`.
+
+![Gemini saturado (web)](img/troubleshooting/gemini-saturado-web.png)
+
+![Gemini saturado (terminal)](img/troubleshooting/gemini-saturado-terminal.png)
+
+Qué hacer: es un problema del servicio externo. Espera un rato y vuelve a
+intentarlo.
+
+#### El asistente tarda mucho en responder
+Las respuestas del asistente pueden tardar **bastante** (en algunos casos, cerca
+de 2 minutos). Puedes comprobarlo en la terminal comparando la hora del mensaje
+`Pregunta del usuario: ...` con la de `Respuesta de la IA: ...` (se ve en la
+captura de la terminal del caso «Falla la consulta a la AEMET y no hay datos
+guardados»).
+
+Qué hacer: espera sin recargar la página ni repetir la consulta; si la repites,
+puedes acabar superando el límite de consultas a Gemini.
 
 ---
 
