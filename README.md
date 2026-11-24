@@ -39,13 +39,38 @@ Antes de nada, asegúrate de que:
   proporcionado los profesores (la conexión **no** usa contraseña). Si nunca has
   usado SSH, consulta el tutorial paso a paso en la sección
   **"12. Conectarse al servidor con SSH"**, al final de este documento.
-- Dispones del **fichero de clave SSH** que te han entregado, guardado en tu
-  ordenador.
+- Has copiado tu **fichero de clave SSH** en tu ordenador del laboratorio (ver
+  más abajo, **"Obtener tu clave privada"**).
 - En el servidor ya hay instalados **Python 3.10 o superior**, **MongoDB** y
   **Apache** (de esto se encargan los profesores; tú **no** necesitas permisos
   de administrador/root).
 - Sabes cuál es la **dirección IP del servidor**. En esta guía la escribiremos
   como `<IP_SERVIDOR>`; sustitúyela por la que te hayan indicado.
+
+### Obtener tu clave privada
+
+Tu clave privada está en el ordenador del laboratorio de Telemática y Servicios,
+en la carpeta `/lab/ping/`. **El fichero de clave se llama exactamente igual que
+tu nombre de usuario**, es decir, el mismo usuario con el que inicias sesión en
+el ordenador del laboratorio. Si no lo recuerdas, puedes consultarlo con:
+
+```bash
+whoami
+```
+
+Sitúate (con `cd`) en la carpeta donde quieras guardar la clave y cópiala allí:
+
+```bash
+cp /lab/ping/<nombre_de_usuario> .
+```
+
+> Sustituye `<nombre_de_usuario>` por tu nombre de usuario del laboratorio. El
+> `.` final significa «la carpeta actual». El fichero copiado se llamará también
+> `<nombre_de_usuario>`, y su ruta es la `<ruta_a_tu_clave>` que se usa en los
+> comandos siguientes. En el tutorial de la sección 12 se propone guardarla en
+> `~/ping-proyecto-final`.
+
+### Conectarte al servidor
 
 Para entrar al servidor desde tu ordenador del laboratorio de Telemática y
 Servicios (si aún no estás dentro), usa tu clave SSH:
@@ -54,7 +79,8 @@ Servicios (si aún no estás dentro), usa tu clave SSH:
 ssh -i <ruta_a_tu_clave> ping@<IP_SERVIDOR>
 ```
 
-> Sustituye `<ruta_a_tu_clave>` por la ruta al fichero de clave que te han dado.
+> Sustituye `<ruta_a_tu_clave>` por la ruta al fichero de clave que copiaste en
+> el paso anterior (por ejemplo, `~/ping-proyecto-final/<nombre_de_usuario>`).
 > Si es la primera vez que te conectas o tienes dudas, consulta el tutorial
 > paso a paso en la sección **"Conectarse al servidor con SSH"**, al final de
 > este documento.
@@ -219,8 +245,6 @@ Explicación de los campos:
   asistente de IA particular. Puedes elegir el tema sobre el que quieres que te
   ayude; después, al hacerle preguntas relacionadas con ese tema, el asistente
   orientará sus respuestas según las instrucciones que hayas configurado.
-  Por ejemplo: «Eres un agente que responde preguntas a alumnos de primer curso de Ingeniería de Telecomunicación
-  en la Universidad Politécnica de Madrid.»
 - `database`: datos para conectar con MongoDB. En el servidor de la asignatura
   los valores habituales son usuario `admin`, contraseña `admin`, IP
   `localhost` y puerto `27017`. No los cambies salvo que te indiquen lo
@@ -352,18 +376,23 @@ ese fichero, puedes entrar; si no lo tienes, no puedes.
 > conectarte. (Más adelante, el código del proyecto se clona **dentro del
 > servidor**; son dos máquinas distintas, no las confundas.)
 
-Guarda el fichero de clave que te han dado en un sitio fácil de recordar. En
-esta guía usaremos una carpeta llamada `ping-proyecto-final` en tu directorio
-personal:
+Tu clave está en la carpeta `/lab/ping/` del ordenador del laboratorio, y **el
+fichero se llama exactamente igual que tu nombre de usuario** (el usuario con el
+que inicias sesión en el laboratorio; puedes consultarlo con `whoami`). Cópiala a
+una carpeta fácil de recordar. En esta guía usaremos una carpeta llamada
+`ping-proyecto-final` en tu directorio personal:
 
 ```bash
 mkdir -p ~/ping-proyecto-final
-mv <ruta_donde_descargaste_la_clave> ~/ping-proyecto-final/
+cd ~/ping-proyecto-final
+cp /lab/ping/<nombre_de_usuario> .
 ```
 
 > `mkdir -p ~/ping-proyecto-final` crea la carpeta (si no existe) en tu
-> directorio personal. `mv` mueve allí el fichero de clave. A partir de ahora
-> nos referiremos a su ubicación como `<ruta_a_tu_clave>`.
+> directorio personal, `cd` entra en ella y `cp` copia allí tu clave (sustituye
+> `<nombre_de_usuario>` por tu usuario; el `.` es la carpeta actual). La clave
+> queda en `~/ping-proyecto-final/<nombre_de_usuario>`. A partir de ahora nos
+> referiremos a esa ubicación como `<ruta_a_tu_clave>`.
 
 ### Paso 2 — Ajustar los permisos de la clave
 
