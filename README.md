@@ -45,6 +45,8 @@ Antes de nada, asegúrate de que:
   se usa en el proyecto final es el mismo que el que se ha usado en la Actividad 4 y
   Laboratorio 4 del bloque de Telemática y Servicios. Recuerda que se arranca usando
   el script `servidor_nube.py`, que está disponible en Moodle.
+- El servidor personal en la nube debe estar arrancado para poder comenzar a trabajar.
+  Usa el script `servidor_nube.py` para arrancarlo y consultar la `<IP_SERVIDOR>`.
 
 ### Obtener tu clave privada
 
