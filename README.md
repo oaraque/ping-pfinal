@@ -172,6 +172,15 @@ La aplicación necesita **tres valores secretos**. Consíguelos antes de seguir:
 2. **API Key de Gemini** (inteligencia artificial):
    Obtén una clave desde
    [Google AI Studio](https://aistudio.google.com/).
+   Se debe acceder al link proporcionado, y gestionar las claves usando la pestaña «Claves de API».
+   Se puede crear la clave usando el botón «Crear claves de API».
+   Para obtener esta clave existen varias maneras.
+   - Usar una cuenta de Google no relacionada con la universidad. Puede ser una cuenta personal,
+     o una cuenta creada para esta asignatura si se desea.
+   - Usar la cuenta de Google asociada a la UPM: la Universidad concede a los alumnos uso
+     de Gemini a través de su cuenta de alumnos. Sin embargo, hay que tener en cuenta que este uso
+     está limitado, y normalmente la cuenta de Google (personal o nueva, es indiferente)
+     da menos problemas de uso con Gemini.
 
 3. **SECRET_KEY** (un secreto para firmar los tokens de inicio de sesión):
    genera uno seguro ejecutando en la terminal:
